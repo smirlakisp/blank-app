@@ -37,9 +37,22 @@ def load_mesh_from_upload(uploaded_file):
         # If it loads as a scene, merge geometry
         mesh = trimesh.util.concatenate([g for g in mesh.geometry.values()])
 
+   # --- Cleanup (safe across trimesh versions) ---
+if hasattr(mesh, "remove_duplicate_faces"):
     mesh.remove_duplicate_faces()
+
+# some versions use "remove_degenerate_faces", others don't
+if hasattr(mesh, "remove_degenerate_faces"):
     mesh.remove_degenerate_faces()
+
+# always good to do
+if hasattr(mesh, "remove_unreferenced_vertices"):
     mesh.remove_unreferenced_vertices()
+
+# If available, merge/clean close vertices
+if hasattr(mesh, "merge_vertices"):
+    mesh.merge_vertices()
+
     return mesh
 
 
