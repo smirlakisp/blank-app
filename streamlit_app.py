@@ -20,7 +20,6 @@ Toolpath CSV expected columns: `x, y, z` (optional: `power, speed, feed`).
 
 # ---------- Helpers ----------
 def load_mesh_from_upload(uploaded_file):
-def load_mesh_from_upload(uploaded_file):
     """Load mesh via trimesh from Streamlit UploadedFile."""
     if uploaded_file is None:
         return None
