@@ -20,6 +20,7 @@ Toolpath CSV expected columns: `x, y, z` (optional: `power, speed, feed`).
 
 # ---------- Helpers ----------
 def load_mesh_from_upload(uploaded_file):
+def load_mesh_from_upload(uploaded_file):
     """Load mesh via trimesh from Streamlit UploadedFile."""
     if uploaded_file is None:
         return None
@@ -27,33 +28,37 @@ def load_mesh_from_upload(uploaded_file):
     data = uploaded_file.read()
     file_like = io.BytesIO(data)
 
-    # Trimesh will infer type from file name extension
-    mesh = trimesh.load(file_like, file_type=uploaded_file.name.split(".")[-1], force="mesh")
+    mesh = trimesh.load(
+        file_like,
+        file_type=uploaded_file.name.split(".")[-1],
+        force="mesh"
+    )
+
     if mesh is None or mesh.is_empty:
         return None
 
-    # Ensure it's a Trimesh object
+    # If it loads as a scene, merge geometry
     if isinstance(mesh, trimesh.Scene):
-        # If it loads as a scene, merge geometry
-        mesh = trimesh.util.concatenate([g for g in mesh.geometry.values()])
+        mesh = trimesh.util.concatenate(
+            [g for g in mesh.geometry.values()]
+        )
 
-   # --- Cleanup (safe across trimesh versions) ---
-if hasattr(mesh, "remove_duplicate_faces"):
-    mesh.remove_duplicate_faces()
+    # --- Safe cleanup across trimesh versions ---
+    if hasattr(mesh, "remove_duplicate_faces"):
+        mesh.remove_duplicate_faces()
 
-# some versions use "remove_degenerate_faces", others don't
-if hasattr(mesh, "remove_degenerate_faces"):
-    mesh.remove_degenerate_faces()
+    if hasattr(mesh, "remove_degenerate_faces"):
+        mesh.remove_degenerate_faces()
 
-# always good to do
-if hasattr(mesh, "remove_unreferenced_vertices"):
-    mesh.remove_unreferenced_vertices()
+    if hasattr(mesh, "remove_unreferenced_vertices"):
+        mesh.remove_unreferenced_vertices()
 
-# If available, merge/clean close vertices
-if hasattr(mesh, "merge_vertices"):
-    mesh.merge_vertices()
+    if hasattr(mesh, "merge_vertices"):
+        mesh.merge_vertices()
 
     return mesh
+    
+
 
 
 def mesh_to_plotly(mesh: trimesh.Trimesh, opacity=0.6):
